@@ -39,14 +39,15 @@ func main() {
 			if err != nil {
 				log.Fatal(err)
 			}
-			for _, file := range archive.Files {
-				file, err := formatFile(file, formatGo, formatJSON)
+			for i, file := range archive.Files {
+				fmtFile, err := formatFile(file, formatGo, formatJSON)
 				if err != nil {
 					log.Fatal(err)
 				}
-				if err := os.WriteFile(match, file.Data, info.Mode()); err != nil {
-					log.Fatal(err)
-				}
+				archive.Files[i] = fmtFile
+			}
+			if err := os.WriteFile(match, txtar.Format(archive), info.Mode()); err != nil {
+				log.Fatal(err)
 			}
 		}
 	}
