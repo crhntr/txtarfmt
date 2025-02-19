@@ -12,6 +12,7 @@ import (
 )
 
 func main() {
+	log.SetOutput(os.Stderr)
 	var (
 		config txtarfmt.Configuration
 		ext    string
@@ -20,29 +21,35 @@ func main() {
 	flag.BoolVar(&config.SkipJSON, "skip-json", false, "skip formatting JSON files")
 	flag.StringVar(&ext, "ext", ".txtar", "file extension filter")
 	flag.Parse()
-	for _, arg := range flag.Args() {
+	count := 0
+	for i, arg := range flag.Args() {
 		matches, err := filepath.Glob(arg)
 		if err != nil {
-			log.Fatal(err)
+			log.Fatalf("bad command argument %d: %s", i, err)
 		}
 		for _, match := range matches {
 			if ext != "" && filepath.Ext(match) != ext {
 				continue
 			}
+			log.Printf("glob match: %q\n", match)
+			count++
 			archive, err := txtar.ParseFile(match)
 			if err != nil {
-				log.Fatal(err)
+				log.Fatalf("%s: %s", match, err)
 			}
 			info, err := os.Stat(match)
 			if err != nil {
-				log.Fatal(err)
+				log.Fatalf("%s: %s", match, err)
 			}
 			if err := txtarfmt.Archive(archive, config); err != nil {
-				log.Fatal(err)
+				log.Fatalf("%s: %s", match, err)
 			}
 			if err := os.WriteFile(match, txtar.Format(archive), info.Mode()); err != nil {
-				log.Fatal(err)
+				log.Fatalf("%s: %s", match, err)
 			}
 		}
+	}
+	if count == 0 {
+		log.Fatal("no files matched")
 	}
 }
