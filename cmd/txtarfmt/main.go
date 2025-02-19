@@ -13,6 +13,8 @@ import (
 
 func main() {
 	log.SetOutput(os.Stderr)
+	log.SetFlags(0)
+	log.SetPrefix("txtarfmt: ")
 	var (
 		config txtarfmt.Configuration
 		ext    string
