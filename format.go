@@ -3,6 +3,7 @@ package txtarfmt
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"go/format"
 	"path/filepath"
 
@@ -15,12 +16,17 @@ type Configuration struct {
 }
 
 func Archive(archive *txtar.Archive, config Configuration) error {
+	seen := make(map[string]struct{})
 	for i, file := range archive.Files {
+		if _, ok := seen[file.Name]; ok {
+			return fmt.Errorf("duplicate archive file %s", file.Name)
+		}
 		fmtFile, err := File(file, config)
 		if err != nil {
 			return err
 		}
 		archive.Files[i] = fmtFile
+		seen[fmtFile.Name] = struct{}{}
 	}
 	return nil
 }
