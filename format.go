@@ -32,28 +32,45 @@ func Archive(archive *txtar.Archive, config Configuration) error {
 }
 
 func File(file txtar.File, config Configuration) (txtar.File, error) {
-	if !config.SkipGo && filepath.Ext(file.Name) == ".go" {
-		out, err := format.Source(file.Data)
-		if err != nil {
-			return file, err
-		}
-		file.Data = out
-	} else if !config.SkipJSON && filepath.Ext(file.Name) == ".json" {
-		var buf bytes.Buffer
-		if err := json.Indent(&buf, file.Data, "", "  "); err != nil {
-			return file, err
-		}
-		file.Data = buf.Bytes()
-	} else if !config.SkipGoMod && filepath.Base(file.Name) == "go.mod" {
-		modFile, err := modfile.Parse(file.Name, file.Data, nil)
-		if err != nil {
-			return file, err
-		}
-		buf, err := modFile.Format()
-		if err != nil {
-			return file, err
-		}
-		file.Data = buf
+	switch {
+	case !config.SkipGo && filepath.Ext(file.Name) == ".go":
+		return formatGo(file)
+	case !config.SkipJSON && filepath.Ext(file.Name) == ".json":
+		return formatJSON(file)
+	case !config.SkipGoMod && filepath.Base(file.Name) == "go.mod":
+		return formatGoMod(file)
+	default:
+		return file, nil
 	}
+}
+
+func formatGo(file txtar.File) (txtar.File, error) {
+	out, err := format.Source(file.Data)
+	if err != nil {
+		return txtar.File{}, err
+	}
+	file.Data = out
+	return file, nil
+}
+
+func formatJSON(file txtar.File) (txtar.File, error) {
+	var buf bytes.Buffer
+	if err := json.Indent(&buf, file.Data, "", "  "); err != nil {
+		return file, err
+	}
+	file.Data = buf.Bytes()
+	return file, nil
+}
+
+func formatGoMod(file txtar.File) (txtar.File, error) {
+	modFile, err := modfile.Parse(file.Name, file.Data, nil)
+	if err != nil {
+		return file, err
+	}
+	buf, err := modFile.Format()
+	if err != nil {
+		return file, err
+	}
+	file.Data = buf
 	return file, nil
 }
