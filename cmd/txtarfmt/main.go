@@ -21,6 +21,8 @@ func main() {
 	)
 	flag.BoolVar(&config.SkipGo, "skip-go", false, "skip formatting Go code")
 	flag.BoolVar(&config.SkipJSON, "skip-json", false, "skip formatting JSON files")
+	flag.BoolVar(&config.SkipGoMod, "skip-gomod", false, "skip formatting go.mod files")
+	flag.BoolVar(&config.SkipYAML, "skip-yaml", false, "skip formatting YAML files")
 	flag.StringVar(&ext, "ext", ".txtar", "file extension filter")
 	flag.Parse()
 	count := 0
