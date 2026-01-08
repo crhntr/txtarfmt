@@ -7,7 +7,6 @@ import (
 	"go/format"
 	"path/filepath"
 
-	"github.com/goccy/go-yaml"
 	"golang.org/x/mod/modfile"
 	"golang.org/x/tools/txtar"
 )
@@ -40,8 +39,6 @@ func File(file txtar.File, config Configuration) (txtar.File, error) {
 		return formatJSON(file)
 	case !config.SkipGoMod && filepath.Base(file.Name) == "go.mod":
 		return formatGoMod(file)
-	case !config.SkipYAML && (filepath.Ext(file.Name) == ".yaml" || filepath.Ext(file.Name) == ".yml"):
-		return formatYAML(file)
 	default:
 		return file, nil
 	}
@@ -75,18 +72,5 @@ func formatGoMod(file txtar.File) (txtar.File, error) {
 		return file, err
 	}
 	file.Data = buf
-	return file, nil
-}
-
-func formatYAML(file txtar.File) (txtar.File, error) {
-	var v any
-	if err := yaml.Unmarshal(file.Data, &v); err != nil {
-		return file, err
-	}
-	out, err := yaml.Marshal(v)
-	if err != nil {
-		return file, err
-	}
-	file.Data = out
 	return file, nil
 }
