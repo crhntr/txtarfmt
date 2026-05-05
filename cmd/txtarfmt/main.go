@@ -94,7 +94,9 @@ func execute(a *txtar.Archive, commands []*exec.Cmd) error {
 	if err != nil {
 		return fmt.Errorf("creating temporary directory failed: %w", err)
 	}
-	defer os.RemoveAll(dir)
+	defer func() {
+		_ = os.RemoveAll(dir)
+	}()
 	updated, err := txtarfmt.Execute(dir, nil, a, commands...)
 	if err != nil {
 		return err
