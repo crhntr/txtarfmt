@@ -18,6 +18,10 @@ func Execute(tmpDir string, ignoreGlobs []string, archive *txtar.Archive, comman
 		return nil, err
 	}
 
+	defer func() {
+		_ = tmpRoot.Close()
+	}()
+
 	if archive != nil {
 		for _, file := range archive.Files {
 			dir := filepath.Dir(filepath.FromSlash(file.Name))
